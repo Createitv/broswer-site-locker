@@ -1,7 +1,7 @@
 {
   "name": "site-locker",
   "displayName": "Site Locker - Website Blocker",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "🔒 A powerful Chrome extension that blocks specified websites until the user enters a configured password. Features secure SHA-256 authentication, session management, multi-language support, and smart domain blocking.",
   "author": "lingxiaoyao <xfy150150@gmail.com>",
   "license": "PROPRIETARY",
