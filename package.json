@@ -1,9 +1,32 @@
 {
   "name": "site-locker",
-  "displayName": "Site locker",
+  "displayName": "Site Locker - Website Blocker",
   "version": "0.0.1",
-  "description": "A Chrome extension that blocks specified websites or site functionality until the user enters a configured password.",
-  "author": "lingxiaoyao xfy150150@gmail.com",
+  "description": "🔒 A powerful Chrome extension that blocks specified websites until the user enters a configured password. Features secure SHA-256 authentication, session management, multi-language support, and smart domain blocking.",
+  "author": "lingxiaoyao <xfy150150@gmail.com>",
+  "license": "PROPRIETARY",
+  "homepage": "https://github.com/lingxiaoyao/site-locker",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lingxiaoyao/site-locker.git"
+  },
+  "keywords": [
+    "chrome-extension",
+    "website-blocker",
+    "parental-control",
+    "productivity",
+    "password-protection",
+    "site-blocking",
+    "web-filter",
+    "browser-extension",
+    "plasmo",
+    "typescript",
+    "react"
+  ],
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  },
   "scripts": {
     "dev": "plasmo dev",
     "build": "plasmo build",
