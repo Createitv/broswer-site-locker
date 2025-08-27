@@ -1,0 +1,73 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: latest
+          run_install: false
+      
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+      
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+      
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      
+      - name: Type check
+        run: pnpm exec tsc --noEmit
+      
+      - name: Build extension
+        run: pnpm build
+      
+      - name: Package extension
+        run: pnpm package
+      
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        with:
+          name: extension-build-${{ github.sha }}
+          path: |
+            build/
+            *.zip
+          retention-days: 30
+      
+      - name: Check extension size
+        run: |
+          echo "📦 Extension build sizes:"
+          if [ -f "build/chrome-mv3-prod.zip" ]; then
+            echo "Chrome: $(du -sh build/chrome-mv3-prod.zip | cut -f1)"
+          fi
+          if [ -f "build/firefox-mv2-prod.zip" ]; then
+            echo "Firefox: $(du -sh build/firefox-mv2-prod.zip | cut -f1)"
+          fi
+          echo "Total build directory: $(du -sh build/ | cut -f1)"
