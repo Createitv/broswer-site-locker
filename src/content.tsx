@@ -1,48 +1,87 @@
 import cssText from "data-text:~style.css"
 import type { PlasmoCSConfig } from "plasmo"
+import React, { useEffect, useState } from "react"
 
-import { CountButton } from "~features/count-button"
+import { LockScreen } from "~features/lock-screen"
 
 export const config: PlasmoCSConfig = {
-  matches: ["<all_urls>"]
+  matches: ["<all_urls>"],
+  run_at: "document_end"
 }
 
 /**
  * Generates a style element with adjusted CSS to work correctly within a Shadow DOM.
- *
- * Tailwind CSS relies on `rem` units, which are based on the root font size (typically defined on the <html>
- * or <body> element). However, in a Shadow DOM (as used by Plasmo), there is no native root element, so the
- * rem values would reference the actual page's root font size—often leading to sizing inconsistencies.
- *
- * To address this, we:
- * 1. Replace the `:root` selector with `:host(plasmo-csui)` to properly scope the styles within the Shadow DOM.
- * 2. Convert all `rem` units to pixel values using a fixed base font size, ensuring consistent styling
- *    regardless of the host page's font size.
  */
 export const getStyle = (): HTMLStyleElement => {
   const baseFontSize = 16
 
   let updatedCssText = cssText.replaceAll(":root", ":host(plasmo-csui)")
   const remRegex = /([\d.]+)rem/g
-  updatedCssText = updatedCssText.replace(remRegex, (match, remValue) => {
+  updatedCssText = updatedCssText.replace(remRegex, (_match, remValue) => {
     const pixelsValue = parseFloat(remValue) * baseFontSize
-
     return `${pixelsValue}px`
   })
 
   const styleElement = document.createElement("style")
-
   styleElement.textContent = updatedCssText
 
   return styleElement
 }
 
 const PlasmoOverlay = () => {
-  return (
-    <div className="plasmo-z-50 plasmo-flex plasmo-fixed plasmo-top-32 plasmo-right-8">
-      <CountButton />
-    </div>
-  )
+  const [shouldShowLock, setShouldShowLock] = useState(false)
+  const [currentDomain, setCurrentDomain] = useState("")
+
+  useEffect(() => {
+    const checkLockStatus = async () => {
+      try {
+        // Get current domain
+        const domain = window.location.hostname.toLowerCase()
+        setCurrentDomain(domain)
+
+        // Send message to background script to check if site should be locked
+        const response = await chrome.runtime.sendMessage({
+          type: "CHECK_LOCK_STATUS",
+          domain: domain,
+          url: window.location.href
+        })
+
+        setShouldShowLock(response?.shouldLock || false)
+      } catch (error) {
+        console.error("Failed to check lock status:", error)
+      }
+    }
+
+    checkLockStatus()
+
+    // Listen for messages from background script
+    const messageListener = (message: any) => {
+      if (message.type === "LOCK_SITE") {
+        setShouldShowLock(true)
+        setCurrentDomain(message.domain)
+      } else if (message.type === "UNLOCK_SITE") {
+        setShouldShowLock(false)
+      }
+    }
+
+    chrome.runtime.onMessage.addListener(messageListener)
+
+    return () => {
+      chrome.runtime.onMessage.removeListener(messageListener)
+    }
+  }, [])
+
+  const handleUnlockSuccess = () => {
+    setShouldShowLock(false)
+    // Reload the page to show unlocked content
+    window.location.reload()
+  }
+
+  if (!shouldShowLock) {
+    return null
+  }
+
+  return <LockScreen domain={currentDomain} onUnlockSuccess={handleUnlockSuccess} />
 }
 
 export default PlasmoOverlay
