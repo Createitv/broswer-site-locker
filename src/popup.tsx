@@ -17,7 +17,7 @@ import type { AuthorizedSession, BlockedSite, SiteLockerSettings } from "~utils/
 import { getTranslations, translations } from "~utils/i18n"
 import type { TranslationStrings } from "~utils/i18n"
 
-const PopupPage: React.FC = () => {
+const IndexPopup: React.FC = () => {
   const [currentTab, setCurrentTab] = useState<chrome.tabs.Tab | null>(null)
   const [currentDomain, setCurrentDomain] = useState("")
   const [isCurrentSiteBlocked, setIsCurrentSiteBlocked] = useState(false)
@@ -59,12 +59,12 @@ const PopupPage: React.FC = () => {
       if (activeTab?.url) {
         const domain = extractDomainFromUrl(activeTab.url)
         setCurrentDomain(domain)
-        
+
         const [isBlocked, isAuthorized] = await Promise.all([
           isDomainBlocked(domain),
           isSessionAuthorized(domain)
         ])
-        
+
         setIsCurrentSiteBlocked(isBlocked)
         setIsCurrentSiteAuthorized(isAuthorized)
       }
@@ -183,11 +183,10 @@ const PopupPage: React.FC = () => {
             <h3 className="text-sm font-medium text-gray-900 mb-2">{t.currentSite}</h3>
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
-                <div className={`w-2 h-2 rounded-full ${
-                  isCurrentSiteBlocked 
-                    ? (isCurrentSiteAuthorized ? "bg-green-500" : "bg-red-500")
-                    : "bg-gray-400"
-                }`}></div>
+                <div className={`w-2 h-2 rounded-full ${isCurrentSiteBlocked
+                  ? (isCurrentSiteAuthorized ? "bg-green-500" : "bg-red-500")
+                  : "bg-gray-400"
+                  }`}></div>
                 <span className="text-sm font-mono text-gray-700">{currentDomain}</span>
               </div>
               <div className="text-xs">
@@ -202,7 +201,7 @@ const PopupPage: React.FC = () => {
                 )}
               </div>
             </div>
-            
+
             {isCurrentSiteBlocked && (
               <button
                 onClick={reloadCurrentTab}
@@ -244,9 +243,9 @@ const PopupPage: React.FC = () => {
                   <span className="font-mono text-green-800">{session.domain}</span>
                   {session.expiresAt && (
                     <span className="text-green-600">
-                      {new Date(session.expiresAt).toLocaleTimeString('zh-CN', { 
-                        hour: '2-digit', 
-                        minute: '2-digit' 
+                      {new Date(session.expiresAt).toLocaleTimeString('zh-CN', {
+                        hour: '2-digit',
+                        minute: '2-digit'
                       })} {t.expires}
                     </span>
                   )}
@@ -268,7 +267,7 @@ const PopupPage: React.FC = () => {
             </svg>
             {t.manageSettings}
           </button>
-          
+
           {authorizedSessions.length > 0 && (
             <button
               onClick={handleClearAllSessions}
@@ -285,7 +284,7 @@ const PopupPage: React.FC = () => {
         {/* Footer */}
         <div className="mt-4 pt-3 border-t border-gray-200 text-center">
           <p className="text-xs text-gray-500">
-            {t.version} 0.0.1 | 
+            {t.version} 0.0.1 |
             <span className={`ml-1 ${settings.isEnabled ? "text-green-600" : "text-red-600"}`}>
               {settings.isEnabled ? t.enabled : t.disabled}
             </span>
@@ -296,4 +295,4 @@ const PopupPage: React.FC = () => {
   )
 }
 
-export default PopupPage
+export default IndexPopup

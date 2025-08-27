@@ -9,11 +9,12 @@
     "./**/*.tsx"
   ],
   "compilerOptions": {
+    "baseUrl": ".",
     "paths": {
-      "~*": [
-        "./src/*"
-      ]
+      "~*": ["./src/*"]
     },
-    "baseUrl": "."
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true
   }
 }
